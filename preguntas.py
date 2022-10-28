@@ -147,7 +147,7 @@ def pregunta_04():
     print("R^2: {:6.4f}".format(linearRegression.score(X_test, y_test)))
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     print("Root Mean Squared Error: {:6.4f}".format(rmse))
-    def pregunta_05():
+def pregunta_05():
     """
     Evaluación del modelo
     -------------------------------------------------------------------------------------
