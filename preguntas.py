@@ -207,4 +207,3 @@ def pregunta_06():
 
     # Retorne el vector de predicciones
     return y_untagged_pred
-
