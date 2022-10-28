@@ -5,143 +5,206 @@ Regresión Lineal Univariada
 En este laboratio se construirá un modelo de regresión lineal univariado.
 
 """
+
 import numpy as np
 import pandas as pd
 
 
 def pregunta_01():
     """
-    En este punto se realiza la lectura de conjuntos de datos.
-    Complete el código presentado a continuación.
+    Carga de datos.
+    
     """
-    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
-    df = ____
 
-    # Asigne la columna "life" a `y` y la columna "fertility" a `X`
-    y = ____[____].____
-    X = ____[____].____
+    # Lea el archivo `amazon_cells_labelled.tsv` y cree un DataFrame usando pandas.
+    # Etiquete la primera columna como `msg` y la segunda como `lbl`. Esta función
+    # retorna el dataframe con las dos columnas.
+    df = pd.read_csv(
+        "amazon_cells_labelled.tsv",
+        sep="\t",
+        header=None,
+        names=["msg", "lbl"],
+    )
 
-    # Imprima las dimensiones de `y`
-    print(____.____)
+    # Separe los grupos de mensajes etiquetados y no etiquetados.
+    df_tagged = df[df["lbl"]>=0]
+    df_untagged = df[df["lbl"].isna()]
 
-    # Imprima las dimensiones de `X`
-    print(____.____)
+    x_tagged = df_tagged["msg"]
+    y_tagged = df_tagged["lbl"]
 
-    # Transforme `y` a un array de numpy usando reshape
-    y_reshaped = y.reshape(____, ____)
+    x_untagged = df_untagged["msg"]
+    y_untagged = df_untagged["lbl"]
 
-    # Trasforme `X` a un array de numpy usando reshape
-    X_reshaped = X.reshape(____, ____)
-
-    # Imprima las nuevas dimensiones de `y`
-    print(____.____)
-
-    # Imprima las nuevas dimensiones de `X`
-    print(____.____)
-
+    # Retorne los grupos de mensajes
+    return x_tagged, y_tagged, x_untagged, y_untagged
 
 def pregunta_02():
     """
-    En este punto se realiza la impresión de algunas estadísticas básicas
-    Complete el código presentado a continuación.
+    Preparación de los conjuntos de datos.
+    -------------------------------------------------------------------------------------
     """
 
-    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
-    df = ____
+    # Importe train_test_split
+    from sklearn.model_selection import train_test_split
 
-    # Imprima las dimensiones del DataFrame
-    print(____.____)
+    # Cargue los datos generados en la pregunta 01.
+    x_tagged, y_tagged, x_untagged, y_untagged = pregunta_01()
+    
+    # con estos datos entreno
+    # Divida los datos de entrenamiento y prueba. La semilla del generador de números
+    # aleatorios es 12345. Use el 10% de patrones para la muestra de prueba.
+    x_train, x_test, y_train, y_test = train_test_split(
+        x_tagged,
+        y_tagged,
+        test_size=0.1,
+        random_state=12345,
+    )
 
-    # Imprima la correlación entre las columnas `life` y `fertility` con 4 decimales.
-    print(____)
-
-    # Imprima la media de la columna `life` con 4 decimales.
-    print(____)
-
-    # Imprima el tipo de dato de la columna `fertility`.
-    print(____)
-
-    # Imprima la correlación entre las columnas `GDP` y `life` con 4 decimales.
-    print(____)
+    # Retorne `X_train`, `X_test`, `y_train` y `y_test`
+    return x_train, x_test, y_train, y_test
 
 
 def pregunta_03():
     """
-    Entrenamiento del modelo sobre todo el conjunto de datos.
-    Complete el código presentado a continuación.
+    Construcción de un analizador de palabras
+    -------------------------------------------------------------------------------------
     """
+    # Importe el stemmer de Porter
+    # Importe CountVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer
+    from nltk.stem.porter import PorterStemmer
 
-    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
-    df = ____
+    # Cree un stemeer que use el algoritmo de Porter.
+    stemmer = PorterStemmer()
+    vectorizer=CountVectorizer(
+        analyzer='word',
+        token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]+\b", 
+        lowercase=True
+        )
 
-    # Asigne a la variable los valores de la columna `fertility`
-    X_fertility = ____
+    # Cree una instancia del analizador de palabras (build_analyzer)
+    analyzer = vectorizer.build_analyzer()
 
-    # Asigne a la variable los valores de la columna `life`
-    y_life = ____
-
-    # Importe LinearRegression
-    from ____ import ____
-
-    # Cree una instancia del modelo de regresión lineal
-    reg = ____
-
-    # Cree El espacio de predicción. Esto es, use linspace para crear
-    # un vector con valores entre el máximo y el mínimo de X_fertility
-    prediction_space = ____(
-        ____,
-        ____,
-    ).reshape(____, _____)
-
-    # Entrene el modelo usando X_fertility y y_life
-    reg.fit(____, ____)
-
-    # Compute las predicciones para el espacio de predicción
-    y_pred = reg.predict(prediction_space)
-
-    # Imprima el R^2 del modelo con 4 decimales
-    print(____.score(____, ____).round(____))
+    # Retorne el analizador de palabras
+    return lambda x: (stemmer.stem(w) for w in analyzer(x))
 
 
 def pregunta_04():
     """
-    Particionamiento del conjunto de datos usando train_test_split.
-    Complete el código presentado a continuación.
+    Especificación del pipeline y entrenamiento
+    -------------------------------------------------------------------------------------
     """
 
-    # Importe LinearRegression
-    # Importe train_test_split
-    # Importe mean_squared_error
-    from ____ import ____
+    # Importe CountVetorizer
+    # Importe GridSearchCV
+    # Importe Pipeline
+    # Importe BernoulliNB
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.pipeline import Pipeline
+    from sklearn.naive_bayes import BernoulliNB
 
-    # Lea el archivo `gm_2008_region.csv` y asignelo al DataFrame `df`
-    df = ____
+    # Cargue las variables.
+    x_train, x_test, y_train, y_test = pregunta_02()
 
-    # Asigne a la variable los valores de la columna `fertility`
-    X_fertility = ____
+    # Obtenga el analizador de la pregunta 3.
+    analyzer = pregunta_03()
 
-    # Asigne a la variable los valores de la columna `life`
-    y_life = ____
-
-    # Divida los datos de entrenamiento y prueba. La semilla del generador de números
-    # aleatorios es 53. El tamaño de la muestra de entrenamiento es del 80%
-    (X_train, X_test, y_train, y_test,) = ____(
-        ____,
-        ____,
-        test_size=____,
-        random_state=____,
+    # Cree una instancia de CountVectorizer que use el analizador de palabras
+    # de la pregunta 3. Esta instancia debe retornar una matriz binaria. El
+    # límite superior para la frecuencia de palabras es del 100% y un límite
+    # inferior de 5 palabras. Solo deben analizarse palabras conformadas por
+    # letras.
+    countVectorizer = CountVectorizer(
+        analyzer=analyzer,
+        lowercase=True,
+        stop_words='english',
+        token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]+\b",
+        binary=True,
+        max_df=1.0,
+        min_df=5,
     )
 
-    # Cree una instancia del modelo de regresión lineal
-    linearRegression = ____
+    # Cree un pipeline que contenga el CountVectorizer y el modelo de BernoulliNB.
+    pipeline = Pipeline(
+        steps=[
+            ("countVectorizer",countVectorizer),
+            ("bernoulli", BernoulliNB()),
+        ],
+    )
 
-    # Entrene el clasificador usando X_train y y_train
-    ____.fit(____, ____)
+    # Defina un diccionario de parámetros para el GridSearchCV. Se deben
+    # considerar 10 valores entre 0.1 y 1.0 para el parámetro alpha de
+    # BernoulliNB.
+    param_grid = {
+        "bernoulli__alpha": np.arange(0.1, 1.01, 0.1),
+    }
 
-    # Pronostique y_test usando X_test
-    y_pred = ____
+    # Defina una instancia de GridSearchCV con el pipeline y el diccionario de
+    # parámetros. Use cv = 5, y "accuracy" como métrica de evaluación
+    gridSearchCV = GridSearchCV(
+        estimator=pipeline,
+        param_grid=param_grid,
+        cv=5,
+        scoring='accuracy',
+        refit=True,
+        return_train_score=True,
+    )
 
-    # Compute and print R^2 and RMSE
-    print("R^2: {:6.4f}".format(linearRegression.score(X_test, y_test)))
-    rmse = np.sqrt(____(____, ____))
-    print("Root Mean Squared Error: {:6.4f}".format(rmse))
+    # Búsque la mejor combinación de regresores
+    gridSearchCV.fit(x_train, y_train)
+
+    # Retorne el mejor modelo
+    return gridSearchCV
+
+
+def pregunta_05():
+    """
+    Evaluación del modelo
+    -------------------------------------------------------------------------------------
+    """
+
+    # Importe confusion_matrix
+    from sklearn.metrics import confusion_matrix
+
+    # Obtenga el pipeline de la pregunta 3.
+    gridSearchCV = pregunta_04()
+
+    # Cargue las variables.
+    X_train, X_test, y_train, y_test = pregunta_02()
+
+    # Evalúe el pipeline con los datos de entrenamiento usando la matriz de confusion.
+    cfm_train = confusion_matrix(
+        y_true=y_train,
+        y_pred=gridSearchCV.predict(X_train),
+    )
+
+    cfm_test = confusion_matrix(
+        y_true=y_test,
+        y_pred=gridSearchCV.predict(X_test),
+    )
+
+    # Retorne la matriz de confusion de entrenamiento y prueba
+    return cfm_train, cfm_test
+
+
+def pregunta_06():
+    """
+    Pronóstico
+    -------------------------------------------------------------------------------------
+    """
+
+    # Obtenga el pipeline de la pregunta 3.
+    gridSearchCV = pregunta_04()
+
+    # Cargue los datos generados en la pregunta 01.
+    x_tagged, y_tagged, x_untagged, y_untagged = pregunta_01()
+
+    # pronostique la polaridad del sentimiento para los datos
+    # no etiquetados
+    y_untagged_pred = gridSearchCV.predict(x_untagged)
+
+    # Retorne el vector de predicciones
+    return y_untagged_pred
+
