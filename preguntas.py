@@ -147,3 +147,51 @@ def pregunta_04():
     print("R^2: {:6.4f}".format(linearRegression.score(X_test, y_test)))
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     print("Root Mean Squared Error: {:6.4f}".format(rmse))
+    def pregunta_05():
+    """
+    Evaluación del modelo
+    -------------------------------------------------------------------------------------
+    """
+
+    # Importe confusion_matrix
+    from sklearn.metrics import confusion_matrix
+
+    # Obtenga el pipeline de la pregunta 3.
+    gridSearchCV = pregunta_04()
+
+    # Cargue las variables.
+    X_train, X_test, y_train, y_test = pregunta_02()
+
+    # Evalúe el pipeline con los datos de entrenamiento usando la matriz de confusion.
+    cfm_train = confusion_matrix(
+        y_true=y_train,
+        y_pred=gridSearchCV.predict(X_train),
+    )
+
+    cfm_test = confusion_matrix(
+        y_true=y_test,
+        y_pred=gridSearchCV.predict(X_test),
+    )
+
+    # Retorne la matriz de confusion de entrenamiento y prueba
+    return cfm_train, cfm_test
+
+
+    def pregunta_06():
+    """
+    Pronóstico
+    -------------------------------------------------------------------------------------
+    """
+
+    # Obtenga el pipeline de la pregunta 3.
+    gridSearchCV = pregunta_04()
+
+    # Cargue los datos generados en la pregunta 01.
+    x_tagged, y_tagged, x_untagged, y_untagged = pregunta_01()
+
+    # pronostique la polaridad del sentimiento para los datos
+    # no etiquetados
+    y_untagged_pred = gridSearchCV.predict(x_untagged)
+
+    # Retorne el vector de predicciones
+    return y_untagged_pred
